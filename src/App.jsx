@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import Home from './pages/Home';
 import AuctionDetail from './pages/AuctionDetail';
 import socketService from './services/socket';
+import { addNotification } from './features/notificationSlice';
 
 function App() {
   const dispatch = useDispatch();
@@ -29,7 +30,7 @@ function App() {
 
       socket.on('notification', (data) => {
         console.log('New notification:', data);
-        // In a real app, we'd update a notification badge or show a toast
+        dispatch(addNotification(data));
       });
 
       return () => {
