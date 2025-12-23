@@ -8,6 +8,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import AuctionDetail from './pages/AuctionDetail';
+import ManageAuctions from './pages/ManageAuctions';
+import CreateAuction from './pages/CreateAuction';
 import socketService from './services/socket';
 import { addNotification } from './features/notificationSlice';
 
@@ -75,6 +77,28 @@ function App() {
             <ProtectedRoute>
               <MainLayout>
                 <AuctionDetail />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/my-auctions"
+          element={
+            <ProtectedRoute roles={['SELLER', 'ADMIN']}>
+              <MainLayout>
+                <ManageAuctions />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/create-auction"
+          element={
+            <ProtectedRoute roles={['SELLER', 'ADMIN']}>
+              <MainLayout>
+                <CreateAuction />
               </MainLayout>
             </ProtectedRoute>
           }
