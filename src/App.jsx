@@ -7,6 +7,7 @@ import MainLayout from './layouts/MainLayout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
+import AuctionDetail from './pages/AuctionDetail';
 
 function App() {
   const dispatch = useDispatch();
@@ -43,6 +44,17 @@ function App() {
             <ProtectedRoute>
               <MainLayout>
                 <Home />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/auctions/:id"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <AuctionDetail />
               </MainLayout>
             </ProtectedRoute>
           }
