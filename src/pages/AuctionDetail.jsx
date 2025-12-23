@@ -1,60 +1,73 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import api from '../services/api';
 import socketService from '../services/socket';
 import CountdownTimer from '../components/CountdownTimer';
+import {
+    fetchAuctionById,
+    fetchAuctionBids,
+    placeBid,
+    updateAuctionFromSocket,
+    addBidFromSocket,
+    auctionEndedFromSocket,
+    clearBidStatus,
+    setOptimisticBid
+} from '../features/auctionSlice';
 
 export default function AuctionDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
+    const {
+        currentAuction: auction,
+        bids,
+        loading,
+        bidLoading,
+        bidError,
+        bidSuccess
+    } = useSelector((state) => state.auction);
 
-    const [auction, setAuction] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [bids, setBids] = useState([]);
     const [bidAmount, setBidAmount] = useState('');
-    const [placingBid, setPlacingBid] = useState(false);
     const [isWatching, setIsWatching] = useState(false);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
+
+    // Determine if the current user is the leading bidder
+    const isLeading = useMemo(() => {
+        if (!user || bids.length === 0) return false;
+        return bids[0].bidderId === user.id;
+    }, [user, bids]);
 
     useEffect(() => {
-        fetchData();
+        dispatch(fetchAuctionById(id));
+        dispatch(fetchAuctionBids(id));
+        checkWatchlist();
         setupSocket();
 
         return () => {
             socketService.leaveAuction(id);
+            dispatch(clearBidStatus());
         };
-    }, [id]);
+    }, [id, dispatch]);
 
-    const fetchData = async () => {
+    useEffect(() => {
+        if (auction) {
+            // Suggest min bid if amount is empty or was just an old price
+            const minIncrement = parseFloat(auction.minIncrement || 0);
+            const currentPrice = parseFloat(auction.currentPrice || 0);
+            const startingPrice = parseFloat(auction.startingPrice || 0);
+
+            const suggestedBid = bids.length === 0 ? startingPrice : currentPrice + minIncrement;
+            setBidAmount(suggestedBid.toFixed(2));
+        }
+    }, [auction?.id, bids.length === 0]); // Only when auction changes or first bid arrives
+
+    const checkWatchlist = async () => {
         try {
-            setLoading(true);
-            const [auctionRes, bidsRes, watchlistRes] = await Promise.all([
-                api.get(`/auctions/${id}`),
-                api.get(`/auctions/${id}/bids`),
-                api.get(`/watchlist/check/${id}`)
-            ]);
-
-            setAuction(auctionRes.data);
-            setBids(bidsRes.data);
-            setIsWatching(watchlistRes.data.isWatching);
-
-            // Suggest min bid
-            const minIncrement = parseFloat(auctionRes.data.minIncrement || 0);
-            const currentPrice = parseFloat(auctionRes.data.currentPrice || 0);
-            const startingPrice = parseFloat(auctionRes.data.startingPrice || 0);
-
-            // If no bids, suggest starting price, else suggest current price + minIncrement
-            const suggestedBid = bidsRes.data.length === 0 ? startingPrice : currentPrice + minIncrement;
-            setBidAmount(suggestedBid.toString());
-
+            const response = await api.get(`/watchlist/check/${id}`);
+            setIsWatching(response.data.isWatching);
         } catch (err) {
-            console.error('Failed to fetch auction details:', err);
-            setError('Failed to load auction details.');
-        } finally {
-            setLoading(false);
+            console.error('Watchlist check failed');
         }
     };
 
@@ -66,46 +79,31 @@ export default function AuctionDetail() {
         if (socket) {
             socket.on('bidPlaced', (data) => {
                 if (data.auctionId === parseInt(id)) {
-                    setAuction(prev => ({
-                        ...prev,
-                        currentPrice: data.newPrice,
-                        endTime: data.endTime,
-                        _count: { ...prev._count, bids: data.bidCount }
-                    }));
-
-                    // Re-fetch bids list for the history table
-                    fetchBids();
+                    dispatch(updateAuctionFromSocket(data));
+                    // We could also add the bid here, but usually a separate fetch or specific bid object from socket is better
+                    // For now let's just re-fetch bids to be accurate
+                    dispatch(fetchAuctionBids(id));
                 }
             });
 
             socket.on('auctionExtended', (data) => {
                 if (data.auctionId === parseInt(id)) {
-                    setAuction(prev => ({
-                        ...prev,
-                        endTime: data.newEndTime
-                    }));
+                    dispatch(updateAuctionFromSocket({ ...data, newPrice: auction?.currentPrice, bidCount: auction?._count?.bids }));
                 }
             });
 
             socket.on('auctionEnded', (data) => {
                 if (data.auctionId === parseInt(id)) {
-                    setAuction(prev => ({
-                        ...prev,
-                        status: 'ENDED',
-                        winnerId: data.winnerId
-                    }));
-                    setSuccess('Auction has ended!');
+                    dispatch(auctionEndedFromSocket(data));
                 }
             });
-        }
-    };
 
-    const fetchBids = async () => {
-        try {
-            const response = await api.get(`/auctions/${id}/bids`);
-            setBids(response.data);
-        } catch (err) {
-            console.error('Failed to fetch bids:', err);
+            socket.on('outbid', (data) => {
+                if (data.auctionId === parseInt(id)) {
+                    // Show a browser notification or a custom toast if wanted
+                    // In this UI, the "Outbid" badge will appear automatically via Redux
+                }
+            });
         }
     };
 
@@ -113,24 +111,28 @@ export default function AuctionDetail() {
         e.preventDefault();
         if (!user) return navigate('/login');
 
-        setError(null);
-        setSuccess(null);
-        setPlacingBid(true);
+        const amount = parseFloat(bidAmount);
+
+        // Simple frontend validation
+        const minRequired = bids.length === 0
+            ? parseFloat(auction.startingPrice)
+            : parseFloat(auction.currentPrice) + parseFloat(auction.minIncrement);
+
+        if (amount < minRequired) {
+            // Handled by backend too, but nice to catch
+            return;
+        }
+
+        // DISPATCH PLACE BID
+        dispatch(setOptimisticBid({ amount, bidder: user, auctionId: parseInt(id) }));
 
         try {
-            const response = await api.post('/bids', {
-                auctionId: parseInt(id),
-                amount: parseFloat(bidAmount),
-                idempotencyKey: `bid-${userId}-${id}-${Date.now()}`
-            });
-
-            setSuccess('Bid placed successfuly!');
-            // Update local suggested amount
-            setBidAmount((parseFloat(bidAmount) + parseFloat(auction.minIncrement)).toString());
+            await dispatch(placeBid({ auctionId: parseInt(id), amount, bidder: user })).unwrap();
+            // Success handled by Redux extraReducers and sockets
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to place bid');
-        } finally {
-            setPlacingBid(false);
+            // Revert or refresh on error
+            dispatch(fetchAuctionBids(id));
+            dispatch(fetchAuctionById(id));
         }
     };
 
@@ -140,9 +142,9 @@ export default function AuctionDetail() {
 
         try {
             await api.post(`/auctions/${id}/buy-now`);
-            setSuccess('Item purchased successfully!');
+            // The socket 'auctionEnded' will handle the UI state transition
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to complete purchase');
+            alert(err.response?.data?.error || 'Failed to complete purchase');
         }
     };
 
@@ -161,7 +163,7 @@ export default function AuctionDetail() {
         }
     };
 
-    if (loading) {
+    if (loading && !auction) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -201,25 +203,37 @@ export default function AuctionDetail() {
                         </div>
 
                         <h1 className="text-3xl font-black text-gray-900 mb-2 mt-2">{auction.title}</h1>
-                        <p className="text-gray-500 mb-6 flex items-center">
+
+                        <div className="flex items-center gap-2 mb-6">
                             <span className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium">Seller: {auction.seller?.name}</span>
-                        </p>
+                            {user && bids.length > 0 && (
+                                isLeading ? (
+                                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider animate-bounce">Leading</span>
+                                ) : (
+                                    bids.some(b => b.bidderId === user.id) && (
+                                        <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">Outbid</span>
+                                    )
+                                )
+                            )}
+                        </div>
 
                         <div className="grid grid-cols-2 gap-4 mb-8">
                             <div className="bg-gray-50 p-4 rounded-2xl">
                                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Current Price</p>
-                                <p className="text-3xl font-black text-primary-600">${auction.currentPrice}</p>
-                                <p className="text-xs text-gray-500 mt-1">{bids.length} bids placed</p>
+                                <div className="flex items-baseline gap-1">
+                                    <p className="text-3xl font-black text-primary-600">${auction.currentPrice}</p>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">{auction._count?.bids || 0} bids placed</p>
                             </div>
                             <div className="bg-gray-50 p-4 rounded-2xl flex flex-col justify-center">
-                                <CountdownTimer targetDate={auction.endTime} onEnd={() => setAuction(a => ({ ...a, status: 'ENDED' }))} />
+                                <CountdownTimer targetDate={auction.endTime} onEnd={() => fetchData()} />
                             </div>
                         </div>
 
                         {auction.status === 'LIVE' ? (
                             <form onSubmit={handlePlaceBid} className="space-y-4">
-                                {error && <div className="p-3 rounded-xl bg-red-50 text-red-600 text-sm font-medium border border-red-100">{error}</div>}
-                                {success && <div className="p-3 rounded-xl bg-green-50 text-green-600 text-sm font-medium border border-green-100">{success}</div>}
+                                {bidError && <div className="p-3 rounded-xl bg-red-50 text-red-600 text-sm font-medium border border-red-100">{bidError}</div>}
+                                {bidSuccess && <div className="p-3 rounded-xl bg-green-50 text-green-600 text-sm font-medium border border-green-100">{bidSuccess}</div>}
 
                                 <div className="flex gap-2">
                                     <div className="flex-grow">
@@ -232,16 +246,16 @@ export default function AuctionDetail() {
                                                 className="input-field !pl-8 !py-4 !text-xl font-black"
                                                 value={bidAmount}
                                                 onChange={(e) => setBidAmount(e.target.value)}
-                                                min={auction.currentPrice + parseFloat(auction.minIncrement)}
+                                                disabled={isLeading || bidLoading}
                                             />
                                         </div>
                                     </div>
                                     <button
                                         type="submit"
-                                        disabled={placingBid}
-                                        className="self-end px-12 py-4 bg-primary-600 text-white rounded-2xl font-black text-lg hover:bg-primary-700 transition transform active:scale-95 shadow-lg shadow-primary-200"
+                                        disabled={bidLoading || isLeading}
+                                        className="self-end px-12 py-4 bg-primary-600 text-white rounded-2xl font-black text-lg hover:bg-primary-700 transition transform active:scale-95 shadow-lg shadow-primary-200 disabled:bg-gray-400 disabled:shadow-none disabled:active:scale-100"
                                     >
-                                        {placingBid ? '...' : 'BID NOW'}
+                                        {bidLoading ? 'PLACING...' : isLeading ? 'LEADING' : 'BID NOW'}
                                     </button>
                                 </div>
 
@@ -252,11 +266,15 @@ export default function AuctionDetail() {
                         ) : (
                             <div className="p-6 bg-red-50 rounded-2xl border border-red-100 text-center">
                                 <p className="text-red-700 font-black tracking-widest uppercase">This Auction is Ended</p>
-                                {auction.winnerId && <p className="text-2xl font-black mt-2 text-red-900">Sold for ${auction.currentPrice}</p>}
+                                {auction.winnerId ? (
+                                    <p className="text-2xl font-black mt-2 text-red-900">Sold for ${auction.currentPrice}</p>
+                                ) : (
+                                    <p className="text-xl font-bold mt-2 text-red-900">Ended without Sale</p>
+                                )}
                             </div>
                         )}
 
-                        {auction.buyNowPrice && auction.status === 'LIVE' && (
+                        {auction.buyNowPrice && auction.status === 'LIVE' && !isLeading && (
                             <div className="mt-8 border-t border-gray-100 pt-8">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -280,11 +298,6 @@ export default function AuctionDetail() {
                             >
                                 <span>{isWatching ? '★' : '☆'}</span> {isWatching ? 'Saved to Watchlist' : 'Watch Auction'}
                             </button>
-                            <button className="p-3 rounded-2xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                                </svg>
-                            </button>
                         </div>
                     </div>
 
@@ -305,12 +318,14 @@ export default function AuctionDetail() {
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
                                     {bids.length > 0 ? bids.map((bid, index) => (
-                                        <tr key={index} className={index === 0 ? 'bg-primary-50/30' : ''}>
+                                        <tr key={bid.id || index} className={index === 0 ? 'bg-primary-50/30' : ''}>
                                             <td className="py-4 text-sm font-bold text-gray-700">
                                                 {bid.bidder?.name || 'Anonymous'}
                                                 {index === 0 && auction.status === 'LIVE' && <span className="ml-2 text-[10px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded font-black uppercase">High</span>}
                                             </td>
-                                            <td className="py-4 text-sm font-black text-gray-900">${bid.amount}</td>
+                                            <td className="py-4 text-sm font-black text-gray-900">
+                                                ${typeof bid.amount === 'number' ? bid.amount.toFixed(2) : bid.amount}
+                                            </td>
                                             <td className="py-4 text-xs text-gray-400 text-right">{new Date(bid.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
                                         </tr>
                                     )) : (

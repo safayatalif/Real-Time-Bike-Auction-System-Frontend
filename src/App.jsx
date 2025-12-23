@@ -8,16 +8,35 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import AuctionDetail from './pages/AuctionDetail';
+import socketService from './services/socket';
 
 function App() {
   const dispatch = useDispatch();
-  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+  const { isAuthenticated, loading, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
       dispatch(fetchCurrentUser());
+
+      // Setup global socket for notifications
+      const socket = socketService.connect();
+      socketService.joinUser(user.id);
+
+      socket.on('outbid', (data) => {
+        // Simple alert for now, can be replaced with a toast
+        alert(`You've been outbid on auction #${data.auctionId}! New price: $${data.newPrice}`);
+      });
+
+      socket.on('notification', (data) => {
+        console.log('New notification:', data);
+        // In a real app, we'd update a notification badge or show a toast
+      });
+
+      return () => {
+        socketService.disconnect();
+      };
     }
-  }, [dispatch, isAuthenticated]);
+  }, [dispatch, isAuthenticated, user?.id]);
 
   if (loading) {
     return (
