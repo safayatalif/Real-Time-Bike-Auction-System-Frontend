@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import toast from 'react-hot-toast';
 
 export default function ManageAuctions() {
     const [auctions, setAuctions] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
     useEffect(() => {
         fetchMyAuctions();
@@ -14,15 +14,10 @@ export default function ManageAuctions() {
     const fetchMyAuctions = async () => {
         try {
             setLoading(true);
-            // We need an endpoint for seller's own auctions. Let's assume /auctions?sellerId=me or similar, 
-            // but usually many systems have a specific endpoint. 
-            // If none exists, we use /auctions?sellerId=... or filter from list.
-            // Based on previous tools, we have /api/admin/auctions?sellerId=X but users can't call /admin.
-            // Let's check auctionController methods for a seller view.
             const response = await api.get('/auctions/seller');
             setAuctions(response.data);
         } catch (err) {
-            setError('Failed to fetch your auctions');
+            toast.error('Failed to fetch your auctions');
             console.error(err);
         } finally {
             setLoading(false);
@@ -34,9 +29,10 @@ export default function ManageAuctions() {
 
         try {
             await api.patch(`/auctions/${id}/cancel`, { reason: 'Cancelled by seller' });
+            toast.success('Auction cancelled successfully');
             fetchMyAuctions();
         } catch (err) {
-            alert(err.response?.data?.error || 'Failed to cancel auction');
+            toast.error(err.response?.data?.error || 'Failed to cancel auction');
         }
     };
 
@@ -44,6 +40,7 @@ export default function ManageAuctions() {
         switch (status) {
             case 'LIVE': return <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Live</span>;
             case 'SCHEDULED': return <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Scheduled</span>;
+            case 'DRAFT': return <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Draft</span>;
             case 'ENDED': return <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Ended</span>;
             case 'CANCELED': return <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Cancelled</span>;
             default: return <span className="bg-gray-50 text-gray-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{status}</span>;
@@ -73,11 +70,7 @@ export default function ManageAuctions() {
                 </Link>
             </div>
 
-            {error ? (
-                <div className="p-12 bg-white rounded-[2rem] text-center border-2 border-dashed border-red-100">
-                    <p className="text-red-500 font-black tracking-tight">{error}</p>
-                </div>
-            ) : auctions.length === 0 ? (
+            {auctions.length === 0 ? (
                 <div className="p-24 bg-white rounded-[3rem] text-center shadow-sm border border-slate-100">
                     <div className="text-7xl mb-8 grayscale opacity-20">🚲</div>
                     <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tighter">Your showroom is empty</h2>
@@ -127,18 +120,27 @@ export default function ManageAuctions() {
                             </div>
 
                             <div className="flex flex-wrap gap-4 w-full md:w-auto">
-                                <Link
-                                    to={`/auctions/${auction.id}`}
-                                    className="flex-grow md:flex-initial px-8 py-3 bg-slate-900 text-white font-black rounded-2xl hover:bg-primary-600 transition shadow-lg shadow-slate-200"
-                                >
-                                    MANAGE
-                                </Link>
-                                {auction.status === 'LIVE' || auction.status === 'SCHEDULED' ? (
+                                {auction.status === 'DRAFT' ? (
+                                    <Link
+                                        to={`/edit-auction/${auction.id}`}
+                                        className="flex-grow md:flex-initial px-8 py-3 bg-primary-600 text-white font-black rounded-2xl hover:bg-primary-700 transition shadow-lg shadow-primary-200"
+                                    >
+                                        EDIT DRAFT
+                                    </Link>
+                                ) : (
+                                    <Link
+                                        to={`/auctions/${auction.id}`}
+                                        className="flex-grow md:flex-initial px-8 py-3 bg-slate-900 text-white font-black rounded-2xl hover:bg-primary-600 transition shadow-lg shadow-slate-200"
+                                    >
+                                        MANAGE
+                                    </Link>
+                                )}
+                                {auction.status === 'LIVE' || auction.status === 'SCHEDULED' || auction.status === 'DRAFT' ? (
                                     <button
                                         onClick={() => cancelAuction(auction.id, auction.title)}
                                         className="flex-grow md:flex-initial px-8 py-3 bg-red-50 text-red-600 font-black rounded-2xl hover:bg-red-100 transition border border-red-100"
                                     >
-                                        CANCEL
+                                        {auction.status === 'DRAFT' ? 'DELETE' : 'CANCEL'}
                                     </button>
                                 ) : null}
                             </div>

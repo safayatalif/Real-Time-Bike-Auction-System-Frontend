@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { register, clearError } from '../features/authSlice';
+import toast from 'react-hot-toast';
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -11,30 +12,30 @@ export default function Register() {
         confirmPassword: '',
         role: 'BUYER',
     });
-    const [passwordError, setPasswordError] = useState('');
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
 
     useEffect(() => {
         if (isAuthenticated) {
+            toast.success('Account created successfully!', { id: 'register-success' });
             navigate('/');
         }
-        return () => dispatch(clearError());
-    }, [isAuthenticated, navigate, dispatch]);
+        if (error) {
+            toast.error(error, { id: 'register-error' });
+            dispatch(clearError());
+        }
+    }, [isAuthenticated, error, navigate, dispatch]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        if (e.target.name === 'confirmPassword' || e.target.name === 'password') {
-            setPasswordError('');
-        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (formData.password !== formData.confirmPassword) {
-            setPasswordError('Passwords do not match');
+            toast.error('Passwords do not match');
             return;
         }
 
@@ -59,11 +60,6 @@ export default function Register() {
                 </div>
 
                 <form className="card !bg-white/80 backdrop-blur-xl border-white/20 p-10 space-y-8" onSubmit={handleSubmit}>
-                    {error && (
-                        <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-2xl text-sm font-bold animate-shake">
-                            ⚠️ {error}
-                        </div>
-                    )}
 
                     <div className="space-y-6">
                         <div>
@@ -127,9 +123,6 @@ export default function Register() {
                             </div>
                         </div>
 
-                        {passwordError && (
-                            <p className="text-xs text-red-500 font-bold ml-4">{passwordError}</p>
-                        )}
 
                         <div>
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2">

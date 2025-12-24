@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { login, clearError } from '../features/authSlice';
+import toast from 'react-hot-toast';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -12,10 +13,14 @@ export default function Login() {
 
     useEffect(() => {
         if (isAuthenticated) {
+            toast.success('Successfully logged in!', { id: 'login-success' });
             navigate('/');
         }
-        return () => dispatch(clearError());
-    }, [isAuthenticated, navigate, dispatch]);
+        if (error) {
+            toast.error(error, { id: 'login-error' });
+            dispatch(clearError());
+        }
+    }, [isAuthenticated, error, navigate, dispatch]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -39,11 +44,6 @@ export default function Login() {
                 </div>
 
                 <form className="card !bg-white/80 backdrop-blur-xl border-white/20 p-10 space-y-8" onSubmit={handleSubmit}>
-                    {error && (
-                        <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-2xl text-sm font-bold animate-shake">
-                            ⚠️ {error}
-                        </div>
-                    )}
 
                     <div className="space-y-6">
                         <div>

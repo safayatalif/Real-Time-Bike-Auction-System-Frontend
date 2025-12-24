@@ -15,6 +15,7 @@ import MyBids from './pages/MyBids';
 import Watchlist from './pages/Watchlist';
 import socketService from './services/socket';
 import { addNotification } from './features/notificationSlice';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const dispatch = useDispatch();
@@ -57,6 +58,7 @@ function App() {
 
   return (
     <Router>
+      <Toaster position="top-right" reverseOrder={false} />
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
@@ -120,6 +122,16 @@ function App() {
 
         <Route
           path="/create-auction"
+          element={
+            <ProtectedRoute roles={['SELLER', 'ADMIN']}>
+              <MainLayout>
+                <CreateAuction />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/edit-auction/:id"
           element={
             <ProtectedRoute roles={['SELLER', 'ADMIN']}>
               <MainLayout>

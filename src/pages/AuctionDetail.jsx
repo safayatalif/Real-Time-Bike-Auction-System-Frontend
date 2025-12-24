@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import api from '../services/api';
 import socketService from '../services/socket';
 import CountdownTimer from '../components/CountdownTimer';
+import toast from 'react-hot-toast';
 import {
     fetchAuctionById,
     fetchAuctionBids,
@@ -49,6 +50,18 @@ export default function AuctionDetail() {
             dispatch(clearBidStatus());
         };
     }, [id, dispatch]);
+
+    useEffect(() => {
+        if (bidSuccess) {
+            toast.success('Bid placed successfully!');
+            setBidAmount('');
+            dispatch(clearBidStatus());
+        }
+        if (bidError) {
+            toast.error(bidError);
+            dispatch(clearBidStatus());
+        }
+    }, [bidSuccess, bidError, dispatch]);
 
     useEffect(() => {
         if (auction) {
@@ -142,9 +155,10 @@ export default function AuctionDetail() {
 
         try {
             await api.post(`/auctions/${id}/buy-now`);
+            toast.success('Purchase successful! You now own this bike.');
             // The socket 'auctionEnded' will handle the UI state transition
         } catch (err) {
-            alert(err.response?.data?.error || 'Failed to complete purchase');
+            toast.error(err.response?.data?.error || 'Failed to complete purchase');
         }
     };
 
@@ -237,53 +251,83 @@ export default function AuctionDetail() {
                                 }} />
                             </div>
                         </div>
-
+                        {/* Bid Form Section */}
                         {auction.status === 'LIVE' ? (
-                            <form onSubmit={handlePlaceBid} className="space-y-6">
-                                {bidError && <div className="p-4 rounded-2xl bg-red-50 text-red-600 text-sm font-black border border-red-100 animate-shake">{bidError}</div>}
-                                {bidSuccess && <div className="p-4 rounded-2xl bg-green-50 text-green-600 text-sm font-black border border-green-100 animate-fade-in">{bidSuccess}</div>}
+                            <>
+                                {isLeading ? (
+                                    <div className="p-8 bg-green-50 rounded-[2rem] border border-green-100 text-center mt-10">
+                                        <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-lg shadow-green-200">
+                                            ✓
+                                        </div>
+                                        <h3 className="text-xl font-black text-green-900">You are the highest bidder!</h3>
+                                        <p className="text-green-700 font-medium mt-1">Excellent choice! Keep an eye on it.</p>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={handlePlaceBid} className="space-y-6 mt-10">
+                                        <div className="flex flex-col sm:flex-row gap-4">
+                                            <div className="flex-grow">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">Quick Bid Entry</label>
+                                                <div className="relative group">
+                                                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xl transition-colors group-focus-within:text-primary-500">$</span>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        className="input-field !pl-12 !py-5 !text-2xl font-black !bg-slate-50 group-focus-within:!bg-white tracking-tighter"
+                                                        value={bidAmount}
+                                                        onChange={(e) => setBidAmount(e.target.value)}
+                                                        disabled={bidLoading}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="submit"
+                                                disabled={bidLoading}
+                                                className="sm:self-end px-12 py-5 bg-slate-900 text-white rounded-[1.5rem] font-black text-lg hover:bg-primary-600 transition-all transform active:scale-95 shadow-2xl shadow-slate-200 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
+                                            >
+                                                {bidLoading ? 'Processing...' : 'Place Bid'}
+                                            </button>
+                                        </div>
 
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    <div className="flex-grow">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">Quick Bid Entry</label>
-                                        <div className="relative group">
-                                            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xl transition-colors group-focus-within:text-primary-500">$</span>
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                className="input-field !pl-12 !py-5 !text-2xl font-black !bg-slate-50 group-focus-within:!bg-white tracking-tighter"
-                                                value={bidAmount}
-                                                onChange={(e) => setBidAmount(e.target.value)}
-                                                disabled={isLeading || bidLoading}
-                                            />
+                                        <div className="px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
+                                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Minimum Next Bid</p>
+                                            <p className="text-sm font-black text-slate-700">
+                                                ${(parseFloat(auction.currentPrice) + parseFloat(auction.minIncrement)).toFixed(2)}
+                                            </p>
+                                        </div>
+                                    </form>
+                                )}
+
+                                {auction.buyNowPrice && !isLeading && (
+                                    <div className="mt-10 pt-10 border-t border-slate-100">
+                                        <div className="flex items-center justify-between bg-primary-50 p-6 rounded-[2rem] border border-primary-100">
+                                            <div>
+                                                <p className="text-[10px] text-primary-600 font-black uppercase tracking-[0.2em] mb-1">Direct Purchase</p>
+                                                <p className="text-3xl font-black text-slate-900 tracking-tighter">${auction.buyNowPrice}</p>
+                                            </div>
+                                            <button
+                                                onClick={handleBuyNow}
+                                                className="px-10 py-4 bg-white text-primary-600 rounded-2xl font-black shadow-lg shadow-primary-200/50 hover:bg-primary-600 hover:text-white transition-all transform active:scale-95"
+                                            >
+                                                BUY IT NOW
+                                            </button>
                                         </div>
                                     </div>
-                                    <button
-                                        type="submit"
-                                        disabled={bidLoading || isLeading}
-                                        className="sm:self-end px-12 py-5 bg-slate-900 text-white rounded-[1.5rem] font-black text-lg hover:bg-primary-600 transition-all transform active:scale-95 shadow-2xl shadow-slate-200 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
-                                    >
-                                        {bidLoading ? 'Processing...' : isLeading ? 'Leading' : 'Place Bid'}
-                                    </button>
-                                </div>
-
-                                <div className="px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
-                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Minimum Next Bid</p>
-                                    <p className="text-sm font-black text-slate-700">
-                                        ${(parseFloat(auction.currentPrice) + parseFloat(auction.minIncrement)).toFixed(2)}
-                                    </p>
-                                </div>
-                            </form>
+                                )}
+                            </>
                         ) : auction.status === 'SCHEDULED' ? (
-                            <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100 text-center">
-                                <p className="text-blue-700 font-black tracking-widest uppercase">Auction Starting Soon</p>
-                                <p className="text-gray-600 font-bold mt-2">
-                                    Starts at: {new Date(auction.startTime).toLocaleString()}
+                            <div className="p-10 bg-blue-50 rounded-[2.5rem] border border-blue-100 text-center mt-10">
+                                <div className="w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-2xl shadow-lg shadow-blue-200">
+                                    📅
+                                </div>
+                                <h3 className="text-xl font-black text-blue-900 tracking-tighter uppercase">Auction Starting Soon</h3>
+                                <p className="text-blue-700 font-medium mt-2">
+                                    Available for bidding on: <br />
+                                    <span className="text-lg font-black">{new Date(auction.startTime).toLocaleString()}</span>
                                 </p>
-                                <p className="text-sm text-gray-500 mt-1 italic">Save to your watchlist to get notified!</p>
+                                <p className="text-sm text-blue-600 mt-4 italic">Save to your watchlist to get notified!</p>
                             </div>
                         ) : (
-                            <div className="p-10 bg-slate-50 rounded-[2.5rem] border border-slate-100 text-center">
+                            <div className="p-10 bg-slate-50 rounded-[2.5rem] border border-slate-100 text-center mt-10">
                                 <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl">
                                     {auction.winnerId ? '🏆' : '⌛'}
                                 </div>
@@ -302,23 +346,6 @@ export default function AuctionDetail() {
                                 ) : (
                                     <p className="text-xl font-black mt-2 text-slate-900">Ended without Sale</p>
                                 )}
-                            </div>
-                        )}
-
-                        {auction.buyNowPrice && auction.status === 'LIVE' && !isLeading && (
-                            <div className="mt-10 pt-10 border-t border-slate-100">
-                                <div className="flex items-center justify-between bg-primary-50 p-6 rounded-[2rem] border border-primary-100">
-                                    <div>
-                                        <p className="text-[10px] text-primary-600 font-black uppercase tracking-[0.2em] mb-1">Direct Purchase</p>
-                                        <p className="text-3xl font-black text-slate-900 tracking-tighter">${auction.buyNowPrice}</p>
-                                    </div>
-                                    <button
-                                        onClick={handleBuyNow}
-                                        className="px-10 py-4 bg-white text-primary-600 rounded-2xl font-black shadow-lg shadow-primary-200/50 hover:bg-primary-600 hover:text-white transition-all transform active:scale-95"
-                                    >
-                                        BUY IT NOW
-                                    </button>
-                                </div>
                             </div>
                         )}
 
@@ -357,7 +384,7 @@ export default function AuctionDetail() {
                                             <td className="py-4 text-sm font-black text-gray-900">
                                                 ${typeof bid.amount === 'number' ? bid.amount.toFixed(2) : bid.amount}
                                             </td>
-                                            <td className="py-4 text-xs text-gray-400 text-right">{new Date(bid.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
+                                            <td className="py-4 text-xs text-gray-400 text-right">{new Date(bid.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
                                         </tr>
                                     )) : (
                                         <tr>

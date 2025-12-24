@@ -1,11 +1,13 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
+import toast from 'react-hot-toast';
 
 export default function CreateAuction() {
+    const { id } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -19,19 +21,73 @@ export default function CreateAuction() {
         buyNowPrice: ''
     });
 
+    useEffect(() => {
+        if (id) {
+            fetchAuctionData();
+        } else {
+            // Reset form for new auction
+            setIsEditing(false);
+            setFormData({
+                title: '',
+                description: '',
+                images: '',
+                startTime: '',
+                endTime: '',
+                startingPrice: '',
+                minIncrement: '10',
+                reservePrice: '',
+                buyNowPrice: ''
+            });
+        }
+    }, [id]);
+
+    const fetchAuctionData = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get(`/auctions/${id}`);
+            const auction = response.data;
+
+            // Format dates for datetime-local input (YYYY-MM-DDThh:mm)
+            const fmtDate = (d) => d ? new Date(d).toISOString().slice(0, 16) : '';
+
+            setFormData({
+                title: auction.title || '',
+                description: auction.description || '',
+                images: auction.images?.join(', ') || '',
+                startTime: fmtDate(auction.startTime),
+                endTime: fmtDate(auction.endTime),
+                startingPrice: auction.startingPrice || '',
+                minIncrement: auction.minIncrement || '10',
+                reservePrice: auction.reservePrice || '',
+                buyNowPrice: auction.buyNowPrice || ''
+            });
+            setIsEditing(true);
+        } catch (err) {
+            toast.error('Failed to load auction data');
+            navigate('/my-auctions');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (e, status = 'PUBLISHED') => {
+        if (e) e.preventDefault();
         setLoading(true);
-        setError(null);
 
-        // Basic validation
-        if (new Date(formData.startTime) >= new Date(formData.endTime)) {
-            setError('End time must be after start time');
+        // Basic validation for published auctions
+        if (status !== 'DRAFT' && new Date(formData.startTime) >= new Date(formData.endTime)) {
+            toast.error('End time must be after start time');
+            setLoading(false);
+            return;
+        }
+
+        if (status !== 'DRAFT' && (!formData.startingPrice || !formData.startTime || !formData.endTime)) {
+            toast.error('Please fill in all required fields to publish');
             setLoading(false);
             return;
         }
@@ -43,18 +99,25 @@ export default function CreateAuction() {
             const payload = {
                 ...formData,
                 images: imagesArray,
-                startingPrice: parseFloat(formData.startingPrice),
-                minIncrement: parseFloat(formData.minIncrement),
+                startingPrice: parseFloat(formData.startingPrice) || 0,
+                minIncrement: parseFloat(formData.minIncrement) || 10,
                 reservePrice: (formData.reservePrice && !isNaN(parseFloat(formData.reservePrice))) ? parseFloat(formData.reservePrice) : null,
                 buyNowPrice: (formData.buyNowPrice && !isNaN(parseFloat(formData.buyNowPrice))) ? parseFloat(formData.buyNowPrice) : null,
-                startTime: new Date(formData.startTime).toISOString(),
-                endTime: new Date(formData.endTime).toISOString()
+                startTime: formData.startTime ? new Date(formData.startTime).toISOString() : new Date().toISOString(),
+                endTime: formData.endTime ? new Date(formData.endTime).toISOString() : new Date(Date.now() + 86400000).toISOString(),
+                status: status === 'DRAFT' ? 'DRAFT' : 'SCHEDULED'
             };
 
-            await api.post('/auctions', payload);
+            if (isEditing) {
+                await api.patch(`/auctions/${id}`, payload);
+                toast.success(status === 'DRAFT' ? 'Draft updated!' : 'Auction published!');
+            } else {
+                await api.post('/auctions', payload);
+                toast.success(status === 'DRAFT' ? 'Draft saved!' : 'Auction published!');
+            }
             navigate('/my-auctions');
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to create auction');
+            toast.error(err.response?.data?.error || 'Failed to process auction');
         } finally {
             setLoading(false);
         }
@@ -64,17 +127,12 @@ export default function CreateAuction() {
         <div className="max-w-4xl mx-auto py-8 px-4">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900">Create New Auction</h1>
-                    <p className="text-gray-500 font-medium">List your bike and start receiving bids</p>
+                    <h1 className="text-3xl font-black text-gray-900">{isEditing ? 'Edit Auction' : 'Create New Auction'}</h1>
+                    <p className="text-gray-500 font-medium">{isEditing ? 'Refine your listing details' : 'List your bike and start receiving bids'}</p>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-                {error && (
-                    <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl font-bold flex items-center gap-2">
-                        <span>⚠️</span> {error}
-                    </div>
-                )}
 
                 {/* Basic Details */}
                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-6">
@@ -226,11 +284,20 @@ export default function CreateAuction() {
                         CANCEL
                     </button>
                     <button
-                        type="submit"
+                        type="button"
                         disabled={loading}
+                        onClick={(e) => handleSubmit(e, 'DRAFT')}
+                        className="px-8 py-3 bg-slate-100 text-slate-700 font-black rounded-2xl hover:bg-slate-200 transition"
+                    >
+                        SAVE AS DRAFT
+                    </button>
+                    <button
+                        type="button"
+                        disabled={loading}
+                        onClick={(e) => handleSubmit(e, 'PUBLISHED')}
                         className="px-12 py-3 bg-primary-600 text-white font-black rounded-2xl hover:bg-primary-700 transition shadow-lg shadow-primary-200 disabled:bg-gray-400"
                     >
-                        {loading ? 'CREATING...' : 'PUBLISH AUCTION'}
+                        {loading ? 'PROCESSING...' : 'PUBLISH AUCTION'}
                     </button>
                 </div>
             </form>
