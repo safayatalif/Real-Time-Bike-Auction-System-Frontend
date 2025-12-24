@@ -22,9 +22,13 @@ function App() {
   const { isAuthenticated, loading, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && !user) {
       dispatch(fetchCurrentUser());
+    }
+  }, [dispatch, isAuthenticated, user]);
 
+  useEffect(() => {
+    if (isAuthenticated && user) {
       // Setup global socket for notifications
       const socket = socketService.connect();
       socketService.joinUser(user.id);
@@ -43,7 +47,7 @@ function App() {
         socketService.disconnect();
       };
     }
-  }, [dispatch, isAuthenticated, user?.id]);
+  }, [dispatch, isAuthenticated, user]);
 
   if (loading) {
     return (

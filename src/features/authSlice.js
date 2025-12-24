@@ -68,7 +68,7 @@ const initialState = {
     user: null,
     accessToken: localStorage.getItem('accessToken'),
     isAuthenticated: !!localStorage.getItem('accessToken'),
-    loading: false,
+    loading: !!localStorage.getItem('accessToken'), // Start loading if we have a token to fetch user profile
     error: null,
 };
 
