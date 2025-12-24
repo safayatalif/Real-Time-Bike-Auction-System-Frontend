@@ -11,6 +11,8 @@ import AuctionDetail from './pages/AuctionDetail';
 import ManageAuctions from './pages/ManageAuctions';
 import CreateAuction from './pages/CreateAuction';
 import AdminDashboard from './pages/AdminDashboard';
+import MyBids from './pages/MyBids';
+import Watchlist from './pages/Watchlist';
 import socketService from './services/socket';
 import { addNotification } from './features/notificationSlice';
 
@@ -78,6 +80,28 @@ function App() {
             <ProtectedRoute>
               <MainLayout>
                 <AuctionDetail />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/my-bids"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <MyBids />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/watchlist"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Watchlist />
               </MainLayout>
             </ProtectedRoute>
           }
