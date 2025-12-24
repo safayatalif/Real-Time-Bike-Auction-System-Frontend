@@ -44,7 +44,7 @@ export default function Home() {
                     </div>
                     <h1 className="text-5xl md:text-7xl font-black mb-8 leading-[1.1] tracking-tighter">
                         Find Your Next <br />
-                        <span className="gradient-text">Dream Ride.</span>
+                        <span className="gradient-text">Dream Ride  `.^.`</span>
                     </h1>
                     <p className="text-xl text-slate-400 mb-10 max-w-lg font-medium leading-relaxed">
                         Join the elite community of bike enthusiasts. Bid, win, and ride with BikeBid's premium real-time auction platform.
