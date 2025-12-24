@@ -226,7 +226,10 @@ export default function AuctionDetail() {
                                 <p className="text-xs text-gray-500 mt-1">{auction._count?.bids || 0} bids placed</p>
                             </div>
                             <div className="bg-gray-50 p-4 rounded-2xl flex flex-col justify-center">
-                                <CountdownTimer targetDate={auction.endTime} onEnd={() => fetchData()} />
+                                <CountdownTimer targetDate={auction.endTime} onEnd={() => {
+                                    dispatch(fetchAuctionById(id));
+                                    dispatch(fetchAuctionBids(id));
+                                }} />
                             </div>
                         </div>
 

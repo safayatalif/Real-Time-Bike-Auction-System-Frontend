@@ -79,6 +79,11 @@ const auctionSlice = createSlice({
             if (state.currentAuction && state.currentAuction.id === action.payload.auctionId) {
                 state.currentAuction.status = 'ENDED';
                 state.currentAuction.winnerId = action.payload.winnerId;
+                state.currentAuction.currentPrice = action.payload.finalPrice;
+                // Optionally update bid count if it was a buy now or last second bid
+                if (action.payload.reason === 'BUY_NOW' && state.currentAuction._count) {
+                    state.currentAuction._count.bids += 1;
+                }
             }
         },
         clearBidStatus: (state) => {
