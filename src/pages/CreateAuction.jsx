@@ -45,8 +45,8 @@ export default function CreateAuction() {
                 images: imagesArray,
                 startingPrice: parseFloat(formData.startingPrice),
                 minIncrement: parseFloat(formData.minIncrement),
-                reservePrice: formData.reservePrice ? parseFloat(formData.reservePrice) : undefined,
-                buyNowPrice: formData.buyNowPrice ? parseFloat(formData.buyNowPrice) : undefined,
+                reservePrice: (formData.reservePrice && !isNaN(parseFloat(formData.reservePrice))) ? parseFloat(formData.reservePrice) : null,
+                buyNowPrice: (formData.buyNowPrice && !isNaN(parseFloat(formData.buyNowPrice))) ? parseFloat(formData.buyNowPrice) : null,
                 startTime: new Date(formData.startTime).toISOString(),
                 endTime: new Date(formData.endTime).toISOString()
             };

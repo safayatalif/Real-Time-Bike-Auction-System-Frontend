@@ -34,64 +34,65 @@ export default function Home() {
     };
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-12">
             {/* Hero Section */}
-            <div className="relative overflow-hidden rounded-3xl bg-primary-900 text-white p-8 md:p-16 shadow-2xl">
+            <div className="relative overflow-hidden rounded-[3rem] bg-slate-900 text-white p-10 md:p-20 shadow-2xl">
                 <div className="relative z-10 max-w-2xl">
-                    <h1 className="text-4xl md:text-6xl font-black mb-6 leading-tight">
-                        Find Your Next <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-blue-200">Dream Ride</span>
+                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full mb-8 border border-white/10">
+                        <span className="flex h-2 w-2 rounded-full bg-primary-400 animate-pulse"></span>
+                        <span className="text-xs font-black uppercase tracking-[0.2em] text-white/80">Premium Bike Auctions</span>
+                    </div>
+                    <h1 className="text-5xl md:text-7xl font-black mb-8 leading-[1.1] tracking-tighter">
+                        Find Your Next <br />
+                        <span className="gradient-text">Dream Ride.</span>
                     </h1>
-                    <p className="text-lg text-primary-100 mb-8 max-w-lg">
+                    <p className="text-xl text-slate-400 mb-10 max-w-lg font-medium leading-relaxed">
                         Join the elite community of bike enthusiasts. Bid, win, and ride with BikeBid's premium real-time auction platform.
                     </p>
-                    <div className="flex flex-wrap gap-4">
-                        <button className="px-8 py-3 bg-white text-primary-900 font-bold rounded-xl hover:bg-primary-50 transition shadow-lg">
-                            Explore Auctions
+                    <div className="flex flex-wrap gap-6">
+                        <button className="btn-primary !px-10 !py-4 shadow-primary-500/20">
+                            Start Bidding
                         </button>
-                        <button className="px-8 py-3 bg-primary-800 text-white font-bold rounded-xl hover:bg-primary-700 border border-primary-700 transition">
+                        <button className="px-10 py-4 bg-white/5 backdrop-blur-md text-white font-black rounded-2xl border border-white/10 hover:bg-white/10 transition shadow-xl">
                             How it Works
                         </button>
                     </div>
                 </div>
-                {/* Abstract background shapes */}
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-primary-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-                <div className="absolute bottom-0 right-0 -mb-20 -mr-20 w-96 h-96 bg-primary-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
+                {/* Background effects */}
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-[500px] h-[500px] bg-primary-600/30 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-0 left-1/2 -ml-20 -mb-20 w-[300px] h-[300px] bg-blue-600/20 rounded-full blur-[100px]"></div>
             </div>
 
             {/* Filter & Search Bar */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between">
-                <form onSubmit={handleSearch} className="relative w-full md:max-w-md">
+            <div className="glass-card p-4 rounded-[2.5rem] flex flex-col md:flex-row gap-6 items-center justify-between sticky top-24 z-40 mx-2 border bg-slate-100">
+                <form onSubmit={handleSearch} className="relative w-full md:max-w-md group">
                     <input
                         type="text"
-                        placeholder="Search bikes, brands, models..."
-                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-primary-500 transition-all font-medium"
+                        placeholder="Search premium bikes..."
+                        className="input-field !pl-12 !bg-slate-50 border-none group-focus-within:!bg-white"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
-                    <svg className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 absolute left-4 top-3.5 text-slate-400 group-focus-within:text-primary-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </form>
 
-                <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-                    <button
-                        onClick={() => setStatus('')}
-                        className={`px-6 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${!status ? 'bg-primary-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    >
-                        All Auctions
-                    </button>
-                    <button
-                        onClick={() => setStatus('LIVE')}
-                        className={`px-6 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${status === 'LIVE' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    >
-                        Live Now
-                    </button>
-                    <button
-                        onClick={() => setStatus('SCHEDULED')}
-                        className={`px-6 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${status === 'SCHEDULED' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    >
-                        Upcoming
-                    </button>
+                <div className="flex gap-3 w-full md:w-auto overflow-x-auto no-scrollbar">
+                    {[
+                        { label: 'All Listings', value: '' },
+                        { label: 'Live Now', value: 'LIVE' },
+                        { label: 'Upcoming', value: 'SCHEDULED' }
+                    ].map((btn) => (
+                        <button
+                            key={btn.value}
+                            onClick={() => setStatus(btn.value)}
+                            className={`px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all duration-300 ${status === btn.value ? 'bg-slate-900 text-white shadow-xl translate-y-[-2px]' : 'bg-slate-100/50 text-slate-500 hover:bg-slate-100 hover:text-slate-700'}`}
+                        >
+                            {btn.label}
+                        </button>
+                    ))}
                 </div>
             </div>
 

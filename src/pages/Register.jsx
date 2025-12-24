@@ -43,35 +43,38 @@ export default function Register() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-4xl font-extrabold text-gray-900">
-                        BikeBid
+        <div className="min-h-screen flex items-center justify-center bg-slate-900 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 -ml-20 -mt-20 w-[600px] h-[600px] bg-primary-600/20 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-0 right-0 -mr-20 -mb-20 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[100px]"></div>
+
+            <div className="max-w-md w-full space-y-12 relative z-10">
+                <div className="text-center">
+                    <h2 className="text-5xl font-black text-white tracking-tighter mb-4">
+                        Join the <span className="gradient-text">Elite.</span>
                     </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        Create your account
+                    <p className="text-slate-400 font-medium">
+                        Create your premium BikeBid profile
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg" onSubmit={handleSubmit}>
+                <form className="card !bg-white/80 backdrop-blur-xl border-white/20 p-10 space-y-8" onSubmit={handleSubmit}>
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                            {error}
+                        <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-2xl text-sm font-bold animate-shake">
+                            ⚠️ {error}
                         </div>
                     )}
 
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2">
                                 Full Name
                             </label>
                             <input
-                                id="name"
                                 name="name"
                                 type="text"
                                 required
-                                className="input-field"
+                                className="input-field !bg-slate-50/50"
                                 placeholder="John Doe"
                                 value={formData.name}
                                 onChange={handleChange}
@@ -79,88 +82,87 @@ export default function Register() {
                         </div>
 
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                Email address
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2">
+                                Email Address
                             </label>
                             <input
-                                id="email"
                                 name="email"
                                 type="email"
                                 required
-                                className="input-field"
-                                placeholder="you@example.com"
+                                className="input-field !bg-slate-50/50"
+                                placeholder="name@company.com"
                                 value={formData.email}
                                 onChange={handleChange}
                             />
                         </div>
 
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                Password
-                            </label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                required
-                                className="input-field"
-                                placeholder="••••••••"
-                                value={formData.password}
-                                onChange={handleChange}
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2">
+                                    Password
+                                </label>
+                                <input
+                                    name="password"
+                                    type="password"
+                                    required
+                                    className="input-field !bg-slate-50/50"
+                                    placeholder="••••••••"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2">
+                                    Confirm
+                                </label>
+                                <input
+                                    name="confirmPassword"
+                                    type="password"
+                                    required
+                                    className="input-field !bg-slate-50/50"
+                                    placeholder="••••••••"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                                Confirm Password
-                            </label>
-                            <input
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                type="password"
-                                required
-                                className="input-field"
-                                placeholder="••••••••"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                            />
-                            {passwordError && (
-                                <p className="mt-1 text-sm text-red-600">{passwordError}</p>
-                            )}
-                        </div>
+                        {passwordError && (
+                            <p className="text-xs text-red-500 font-bold ml-4">{passwordError}</p>
+                        )}
 
                         <div>
-                            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                                I want to
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2">
+                                Account Type
                             </label>
-                            <select
-                                id="role"
-                                name="role"
-                                className="input-field"
-                                value={formData.role}
-                                onChange={handleChange}
-                            >
-                                <option value="BUYER">Buy bikes</option>
-                                <option value="SELLER">Sell bikes</option>
-                            </select>
+                            <div className="flex bg-slate-100 p-1.5 rounded-2xl">
+                                {['BUYER', 'SELLER'].map((r) => (
+                                    <button
+                                        key={r}
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, role: r })}
+                                        className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.role === r ? 'bg-white text-primary-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        {r}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {loading ? 'Creating account...' : 'Sign up'}
-                        </button>
-                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full btn-primary !rounded-2xl !py-4 shadow-2xl shadow-primary-500/30"
+                    >
+                        {loading ? 'CREATING PROFILE...' : 'SIGN UP'}
+                    </button>
 
-                    <div className="text-center">
-                        <p className="text-sm text-gray-600">
-                            Already have an account?{' '}
-                            <Link to="/login" className="font-medium text-primary-600 hover:text-primary-500">
-                                Sign in
+                    <div className="text-center pt-4">
+                        <p className="text-sm text-slate-500 font-medium">
+                            Joined before?{' '}
+                            <Link to="/login" className="font-black text-primary-600 hover:text-primary-500 underline underline-offset-4">
+                                Sign In
                             </Link>
                         </p>
                     </div>

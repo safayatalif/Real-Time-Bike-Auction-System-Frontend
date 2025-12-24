@@ -195,37 +195,42 @@ export default function AuctionDetail() {
                 </div>
 
                 {/* Right Column: Bidding Action */}
-                <div className="space-y-6">
-                    <div className="bg-white rounded-3xl p-8 shadow-xl border border-primary-100 relative overflow-hidden">
-                        {/* Status Badge */}
-                        <div className={`absolute top-0 right-0 px-6 py-2 rounded-bl-3xl text-xs font-black uppercase tracking-widest text-white ${auction.status === 'LIVE' ? 'bg-green-600' : 'bg-blue-600'}`}>
-                            {auction.status}
+                <div className="space-y-8">
+                    <div className="bg-white rounded-[3rem] p-10 shadow-[0_20px_50px_rgb(0,0,0,0.05)] border border-slate-100 relative overflow-hidden">
+                        {/* Premium Status Badge */}
+                        <div className={`absolute top-0 right-0 px-8 py-3 rounded-bl-[2rem] text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-lg ${auction.status === 'LIVE' ? 'bg-red-500 shadow-red-200 animate-pulse' : 'bg-blue-600 shadow-blue-200'}`}>
+                            {auction.status === 'LIVE' ? 'Live Now' : auction.status}
                         </div>
 
-                        <h1 className="text-3xl font-black text-gray-900 mb-2 mt-2">{auction.title}</h1>
+                        <h1 className="text-4xl font-black text-slate-900 mb-4 mt-4 tracking-tighter leading-tight">{auction.title}</h1>
 
-                        <div className="flex items-center gap-2 mb-6">
-                            <span className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium">Seller: {auction.seller?.name}</span>
+                        <div className="flex flex-wrap items-center gap-3 mb-10">
+                            <span className="bg-slate-50 text-slate-500 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border border-slate-100">
+                                Seller: {auction.seller?.name}
+                            </span>
                             {user && bids.length > 0 && (
                                 isLeading ? (
-                                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider animate-bounce">Leading</span>
+                                    <span className="bg-green-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-green-200 flex items-center gap-2">
+                                        <span className="h-1.5 w-1.5 bg-white rounded-full animate-ping"></span>
+                                        Leading
+                                    </span>
                                 ) : (
                                     bids.some(b => b.bidderId === user.id) && (
-                                        <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">Outbid</span>
+                                        <span className="bg-red-50 text-red-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-red-100">Outbid</span>
                                     )
                                 )
                             )}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 mb-8">
-                            <div className="bg-gray-50 p-4 rounded-2xl">
-                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Current Price</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+                            <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mb-2">Current Prime Bid</p>
                                 <div className="flex items-baseline gap-1">
-                                    <p className="text-3xl font-black text-primary-600">${auction.currentPrice}</p>
+                                    <p className="text-4xl font-black text-slate-900 tracking-tighter">${auction.currentPrice}</p>
                                 </div>
-                                <p className="text-xs text-gray-500 mt-1">{auction._count?.bids || 0} bids placed</p>
+                                <p className="text-xs text-slate-500 mt-2 font-bold">{auction._count?.bids || 0} secure bids</p>
                             </div>
-                            <div className="bg-gray-50 p-4 rounded-2xl flex flex-col justify-center">
+                            <div className="bg-slate-900 p-6 rounded-[2rem] shadow-xl shadow-slate-200 flex flex-col justify-center">
                                 <CountdownTimer targetDate={auction.endTime} onEnd={() => {
                                     dispatch(fetchAuctionById(id));
                                     dispatch(fetchAuctionBids(id));
@@ -234,19 +239,19 @@ export default function AuctionDetail() {
                         </div>
 
                         {auction.status === 'LIVE' ? (
-                            <form onSubmit={handlePlaceBid} className="space-y-4">
-                                {bidError && <div className="p-3 rounded-xl bg-red-50 text-red-600 text-sm font-medium border border-red-100">{bidError}</div>}
-                                {bidSuccess && <div className="p-3 rounded-xl bg-green-50 text-green-600 text-sm font-medium border border-green-100">{bidSuccess}</div>}
+                            <form onSubmit={handlePlaceBid} className="space-y-6">
+                                {bidError && <div className="p-4 rounded-2xl bg-red-50 text-red-600 text-sm font-black border border-red-100 animate-shake">{bidError}</div>}
+                                {bidSuccess && <div className="p-4 rounded-2xl bg-green-50 text-green-600 text-sm font-black border border-green-100 animate-fade-in">{bidSuccess}</div>}
 
-                                <div className="flex gap-2">
+                                <div className="flex flex-col sm:flex-row gap-4">
                                     <div className="flex-grow">
-                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-2 mb-1 block">Your Bid Amount</label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">Quick Bid Entry</label>
+                                        <div className="relative group">
+                                            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xl transition-colors group-focus-within:text-primary-500">$</span>
                                             <input
                                                 type="number"
                                                 step="0.01"
-                                                className="input-field !pl-8 !py-4 !text-xl font-black"
+                                                className="input-field !pl-12 !py-5 !text-2xl font-black !bg-slate-50 group-focus-within:!bg-white tracking-tighter"
                                                 value={bidAmount}
                                                 onChange={(e) => setBidAmount(e.target.value)}
                                                 disabled={isLeading || bidLoading}
@@ -256,39 +261,62 @@ export default function AuctionDetail() {
                                     <button
                                         type="submit"
                                         disabled={bidLoading || isLeading}
-                                        className="self-end px-12 py-4 bg-primary-600 text-white rounded-2xl font-black text-lg hover:bg-primary-700 transition transform active:scale-95 shadow-lg shadow-primary-200 disabled:bg-gray-400 disabled:shadow-none disabled:active:scale-100"
+                                        className="sm:self-end px-12 py-5 bg-slate-900 text-white rounded-[1.5rem] font-black text-lg hover:bg-primary-600 transition-all transform active:scale-95 shadow-2xl shadow-slate-200 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
                                     >
-                                        {bidLoading ? 'PLACING...' : isLeading ? 'LEADING' : 'BID NOW'}
+                                        {bidLoading ? 'Processing...' : isLeading ? 'Leading' : 'Place Bid'}
                                     </button>
                                 </div>
 
-                                <p className="text-xs text-gray-400 text-center font-medium">
-                                    Min bid: ${(parseFloat(auction.currentPrice) + parseFloat(auction.minIncrement)).toFixed(2)} | Increment: ${auction.minIncrement}
-                                </p>
+                                <div className="px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
+                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Minimum Next Bid</p>
+                                    <p className="text-sm font-black text-slate-700">
+                                        ${(parseFloat(auction.currentPrice) + parseFloat(auction.minIncrement)).toFixed(2)}
+                                    </p>
+                                </div>
                             </form>
+                        ) : auction.status === 'SCHEDULED' ? (
+                            <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100 text-center">
+                                <p className="text-blue-700 font-black tracking-widest uppercase">Auction Starting Soon</p>
+                                <p className="text-gray-600 font-bold mt-2">
+                                    Starts at: {new Date(auction.startTime).toLocaleString()}
+                                </p>
+                                <p className="text-sm text-gray-500 mt-1 italic">Save to your watchlist to get notified!</p>
+                            </div>
                         ) : (
-                            <div className="p-6 bg-red-50 rounded-2xl border border-red-100 text-center">
-                                <p className="text-red-700 font-black tracking-widest uppercase">This Auction is Ended</p>
+                            <div className="p-10 bg-slate-50 rounded-[2.5rem] border border-slate-100 text-center">
+                                <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl">
+                                    {auction.winnerId ? '🏆' : '⌛'}
+                                </div>
+                                <p className="text-slate-400 font-black tracking-[0.2em] uppercase text-[10px] mb-2">Auction Concluded</p>
                                 {auction.winnerId ? (
-                                    <p className="text-2xl font-black mt-2 text-red-900">Sold for ${auction.currentPrice}</p>
+                                    <>
+                                        <p className="text-3xl font-black mt-2 text-slate-900 tracking-tighter">Sold for ${auction.currentPrice}</p>
+                                        {user?.id === auction.winnerId ? (
+                                            <div className="mt-6 p-4 bg-green-500 text-white rounded-2xl font-black shadow-lg shadow-green-200 animate-bounce">
+                                                🎉 CONGRATULATIONS! YOU WON
+                                            </div>
+                                        ) : (
+                                            <p className="text-slate-500 font-medium mt-2">New owner found</p>
+                                        )}
+                                    </>
                                 ) : (
-                                    <p className="text-xl font-bold mt-2 text-red-900">Ended without Sale</p>
+                                    <p className="text-xl font-black mt-2 text-slate-900">Ended without Sale</p>
                                 )}
                             </div>
                         )}
 
                         {auction.buyNowPrice && auction.status === 'LIVE' && !isLeading && (
-                            <div className="mt-8 border-t border-gray-100 pt-8">
-                                <div className="flex items-center justify-between">
+                            <div className="mt-10 pt-10 border-t border-slate-100">
+                                <div className="flex items-center justify-between bg-primary-50 p-6 rounded-[2rem] border border-primary-100">
                                     <div>
-                                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Buy It Now</p>
-                                        <p className="text-2xl font-black text-gray-900">${auction.buyNowPrice}</p>
+                                        <p className="text-[10px] text-primary-600 font-black uppercase tracking-[0.2em] mb-1">Direct Purchase</p>
+                                        <p className="text-3xl font-black text-slate-900 tracking-tighter">${auction.buyNowPrice}</p>
                                     </div>
                                     <button
                                         onClick={handleBuyNow}
-                                        className="px-8 py-3 bg-white border-2 border-primary-600 text-primary-600 rounded-2xl font-black hover:bg-primary-50 transition"
+                                        className="px-10 py-4 bg-white text-primary-600 rounded-2xl font-black shadow-lg shadow-primary-200/50 hover:bg-primary-600 hover:text-white transition-all transform active:scale-95"
                                     >
-                                        BUY NOW
+                                        BUY IT NOW
                                     </button>
                                 </div>
                             </div>

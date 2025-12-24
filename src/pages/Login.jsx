@@ -23,51 +23,53 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-4xl font-extrabold text-gray-900">
-                        BikeBid
+        <div className="min-h-screen flex items-center justify-center bg-slate-900 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-[600px] h-[600px] bg-primary-600/20 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[100px]"></div>
+
+            <div className="max-w-md w-full space-y-12 relative z-10">
+                <div className="text-center">
+                    <h2 className="text-5xl font-black text-white tracking-tighter mb-4">
+                        Welcome <span className="gradient-text">Back.</span>
                     </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        Sign in to your account
+                    <p className="text-slate-400 font-medium">
+                        Log in to your premium BikeBid account
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg" onSubmit={handleSubmit}>
+                <form className="card !bg-white/80 backdrop-blur-xl border-white/20 p-10 space-y-8" onSubmit={handleSubmit}>
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                            {error}
+                        <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-2xl text-sm font-bold animate-shake">
+                            ⚠️ {error}
                         </div>
                     )}
 
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                Email address
+                            <label htmlFor="email" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2">
+                                Email Address
                             </label>
                             <input
                                 id="email"
-                                name="email"
                                 type="email"
                                 required
-                                className="input-field"
-                                placeholder="you@example.com"
+                                className="input-field !bg-slate-50/50"
+                                placeholder="name@company.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="password" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2">
                                 Password
                             </label>
                             <input
                                 id="password"
-                                name="password"
                                 type="password"
                                 required
-                                className="input-field"
+                                className="input-field !bg-slate-50/50"
                                 placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
@@ -75,21 +77,19 @@ export default function Login() {
                         </div>
                     </div>
 
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {loading ? 'Signing in...' : 'Sign in'}
-                        </button>
-                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full btn-primary !rounded-2xl !py-4 shadow-2xl shadow-primary-500/30"
+                    >
+                        {loading ? 'AUTHENTICATING...' : 'SIGN IN'}
+                    </button>
 
-                    <div className="text-center">
-                        <p className="text-sm text-gray-600">
-                            Don't have an account?{' '}
-                            <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
-                                Sign up
+                    <div className="text-center pt-4">
+                        <p className="text-sm text-slate-500 font-medium">
+                            First time here?{' '}
+                            <Link to="/register" className="font-black text-primary-600 hover:text-primary-500 underline underline-offset-4">
+                                Create Account
                             </Link>
                         </p>
                     </div>

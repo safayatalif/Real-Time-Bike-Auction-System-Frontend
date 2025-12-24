@@ -57,20 +57,25 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="max-w-7xl mx-auto py-8 px-4">
-            <h1 className="text-3xl font-black text-gray-900 mb-8">Admin Dashboard</h1>
+        <div className="max-w-7xl mx-auto py-12 px-4 space-y-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Command Centre</h1>
+                    <p className="text-slate-500 font-medium">System overview and moderation tools</p>
+                </div>
 
-            {/* Tabs */}
-            <div className="flex gap-4 mb-6 border-b border-gray-200">
-                {['USERS', 'AUCTIONS', 'LOGS'].map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`px-4 py-2 font-bold transition-all ${activeTab === tab ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        {tab}
-                    </button>
-                ))}
+                {/* Modern Tabs */}
+                <div className="flex bg-slate-100 p-1.5 rounded-[1.5rem] w-fit">
+                    {['USERS', 'AUCTIONS', 'LOGS'].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-8 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeTab === tab ? 'bg-white text-primary-600 shadow-lg' : 'text-slate-500 hover:text-slate-800'}`}
+                        >
+                            {tab}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {loading ? (

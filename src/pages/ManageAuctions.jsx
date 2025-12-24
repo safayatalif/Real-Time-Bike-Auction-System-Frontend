@@ -59,84 +59,84 @@ export default function ManageAuctions() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto py-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+        <div className="max-w-7xl mx-auto py-12 px-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900">Manage Your Auctions</h1>
-                    <p className="text-gray-500 font-medium">Tracking and controlling your active and past listings</p>
+                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Inventory Control</h1>
+                    <p className="text-slate-500 font-medium">Tracking and controlling your elite listings</p>
                 </div>
                 <Link
                     to="/create-auction"
-                    className="bg-primary-600 text-white px-8 py-3 rounded-2xl font-black shadow-lg shadow-primary-200 hover:bg-primary-700 transition text-center"
+                    className="btn-primary"
                 >
-                    + NEW LISTING
+                    + NEW AUCTION
                 </Link>
             </div>
 
             {error ? (
-                <div className="p-8 bg-white rounded-3xl text-center border-2 border-dashed border-red-100">
-                    <p className="text-red-500 font-bold">{error}</p>
+                <div className="p-12 bg-white rounded-[2rem] text-center border-2 border-dashed border-red-100">
+                    <p className="text-red-500 font-black tracking-tight">{error}</p>
                 </div>
             ) : auctions.length === 0 ? (
-                <div className="p-20 bg-white rounded-3xl text-center border-2 border-dashed border-gray-100 shadow-sm">
-                    <div className="text-6xl mb-6 grayscale opacity-50">🚲</div>
-                    <h2 className="text-2xl font-black text-gray-900 mb-2">You haven't listed any bikes yet</h2>
-                    <p className="text-gray-500 mb-8 max-w-sm mx-auto">Ready to sell your bike to our community? Create your first auction today!</p>
+                <div className="p-24 bg-white rounded-[3rem] text-center shadow-sm border border-slate-100">
+                    <div className="text-7xl mb-8 grayscale opacity-20">🚲</div>
+                    <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tighter">Your showroom is empty</h2>
+                    <p className="text-slate-400 mb-10 max-w-sm mx-auto font-medium">Ready to list your premium bike? Join our community of elite sellers today.</p>
                     <Link
                         to="/create-auction"
-                        className="inline-block px-12 py-3 bg-primary-600 text-white font-black rounded-2xl hover:bg-primary-700 transition"
+                        className="btn-primary inline-block"
                     >
                         START SELLING
                     </Link>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-8">
                     {auctions.map((auction) => (
-                        <div key={auction.id} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row gap-6 items-center">
-                            <div className="w-full md:w-32 h-32 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0">
+                        <div key={auction.id} className="card group flex flex-col md:flex-row gap-8 items-center !p-8">
+                            <div className="w-full md:w-40 h-40 rounded-[1.5rem] overflow-hidden bg-slate-50 flex-shrink-0 shadow-inner">
                                 <img
                                     src={auction.images?.[0] || 'https://via.placeholder.com/150'}
                                     alt={auction.title}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                 />
                             </div>
 
-                            <div className="flex-grow space-y-2 text-center md:text-left">
-                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                                    <h3 className="text-lg font-black text-gray-900">{auction.title}</h3>
+                            <div className="flex-grow space-y-4 text-center md:text-left">
+                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">{auction.title}</h3>
                                     {getStatusBadge(auction.status)}
                                 </div>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                                     <div>
-                                        <p className="text-[10px] font-black text-gray-400 border uppercase tracking-wider">Starting</p>
-                                        <p className="text-sm font-bold text-gray-700">${auction.startingPrice}</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Starting</p>
+                                        <p className="text-lg font-black text-slate-900 tracking-tight">${auction.startingPrice}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-gray-400 border uppercase tracking-wider">Current</p>
-                                        <p className="text-sm font-black text-primary-600">${auction.currentPrice}</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Current</p>
+                                        <p className="text-lg font-black text-primary-600 tracking-tight">${auction.currentPrice}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-gray-400 border uppercase tracking-wider">Bids</p>
-                                        <p className="text-sm font-bold text-gray-700">{auction._count?.bids || 0}</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Bids</p>
+                                        <p className="text-lg font-black text-slate-900 tracking-tight">{auction._count?.bids || 0}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-gray-400 border uppercase tracking-wider">Ending</p>
-                                        <p className="text-sm font-bold text-gray-700">{new Date(auction.endTime).toLocaleDateString()}</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Ending</p>
+                                        <p className="text-sm font-black text-slate-600 tracking-tight">{new Date(auction.endTime).toLocaleDateString()}</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                            <div className="flex flex-wrap gap-4 w-full md:w-auto">
                                 <Link
                                     to={`/auctions/${auction.id}`}
-                                    className="flex-grow md:flex-initial px-6 py-3 bg-gray-50 text-gray-700 font-black rounded-xl hover:bg-gray-100 transition text-center"
+                                    className="flex-grow md:flex-initial px-8 py-3 bg-slate-900 text-white font-black rounded-2xl hover:bg-primary-600 transition shadow-lg shadow-slate-200"
                                 >
-                                    VIEW
+                                    MANAGE
                                 </Link>
                                 {auction.status === 'LIVE' || auction.status === 'SCHEDULED' ? (
                                     <button
                                         onClick={() => cancelAuction(auction.id, auction.title)}
-                                        className="flex-grow md:flex-initial px-6 py-3 bg-red-50 text-red-600 font-black rounded-xl hover:bg-red-100 transition flex items-center justify-center gap-2"
+                                        className="flex-grow md:flex-initial px-8 py-3 bg-red-50 text-red-600 font-black rounded-2xl hover:bg-red-100 transition border border-red-100"
                                     >
                                         CANCEL
                                     </button>

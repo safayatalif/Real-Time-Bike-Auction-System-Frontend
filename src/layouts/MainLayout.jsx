@@ -30,11 +30,11 @@ export default function MainLayout({ children }) {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-slate-50">
             {/* Header */}
-            <header className="bg-white shadow-sm sticky top-0 z-50">
+            <header className="bg-white/70 backdrop-blur-md sticky top-0 z-50 border-b border-white/20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
+                    <div className="flex justify-between items-center h-20">
                         {/* Logo */}
                         <div className="flex items-center">
                             <Link to="/" className="flex items-center">
@@ -42,14 +42,14 @@ export default function MainLayout({ children }) {
                             </Link>
                         </div>
 
-                        {/* Desktop Navigation */}
-                        <nav className="hidden md:flex space-x-8">
-                            {filteredNavigation.slice(0, 3).map((item) => (
+                        <nav className="hidden md:flex space-x-6">
+                            {filteredNavigation.map((item) => (
                                 <Link
                                     key={item.name}
                                     to={item.href}
-                                    className="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition"
+                                    className="text-gray-700 hover:text-primary-600 px-2 py-2 text-sm font-bold transition flex items-center gap-1"
                                 >
+                                    <span className="text-lg">{item.icon}</span>
                                     {item.name}
                                 </Link>
                             ))}
