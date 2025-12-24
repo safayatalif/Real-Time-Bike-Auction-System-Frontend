@@ -1,6 +1,6 @@
 # BikeBid Frontend
 
-A modern React frontend for the BikeBid real-time auction platform.
+A modern, premium React frontend for the BikeBid real-time auction platform.
 
 ## Tech Stack
 
@@ -8,9 +8,10 @@ A modern React frontend for the BikeBid real-time auction platform.
 - **Vite** - Build tool and dev server
 - **Redux Toolkit** - State management
 - **React Router** - Routing
-- **Tailwind CSS** - Styling
-- **Axios** - HTTP client
-- **Socket.IO Client** - Real-time communication
+- **Tailwind CSS** - Modern, custom styling
+- **Axios** - HTTP client for API communication
+- **Socket.IO Client** - Real-time updates and notifications
+- **React Hot Toast** - Premium notification alerts
 
 ## Getting Started
 
@@ -43,40 +44,37 @@ npm run build
 
 ```
 src/
-├── components/       # Reusable components
-│   └── ProtectedRoute.jsx
-├── features/         # Redux slices
-│   └── authSlice.js
-├── layouts/          # Layout components
-│   └── MainLayout.jsx
+├── components/       # Reusable components (AuctionCard, CountdownTimer, etc.)
+├── features/         # Redux slices (auth, auction, notification)
+├── layouts/          # Layout components (MainLayout)
 ├── pages/            # Page components
 │   ├── Login.jsx
 │   ├── Register.jsx
-│   └── Home.jsx
-├── services/         # API services
-│   └── api.js
-├── store/            # Redux store
-│   └── store.js
-├── utils/            # Utility functions
-├── App.jsx           # Main app component
-├── main.jsx          # Entry point
-└── index.css         # Global styles
+│   ├── Home.jsx
+│   ├── AuctionDetail.jsx
+│   ├── CreateAuction.jsx
+│   ├── ManageAuctions.jsx
+│   ├── MyBids.jsx
+│   ├── Watchlist.jsx
+│   └── AdminDashboard.jsx
+├── services/         # API & Socket services
+├── store/            # Redux store configuration
+└── index.css         # Global styles & Tailwind theme
 ```
 
-## Features Implemented
+## Key Features
 
-✅ User authentication (Login/Register)
-✅ Protected routes with role-based access
-✅ Redux state management
-✅ Axios interceptors for token refresh
-✅ Premium UI with Tailwind CSS
-✅ Responsive design
-✅ User menu with logout
-✅ Notification bell (UI only)
+- **Real-Time Bidding**: Dynamic auction updates via WebSockets.
+- **Auction Lifecycle**: Full support for Drafts, Scheduled, Live, and Concluded auctions.
+- **Premium Aesthetics**: Sleek glassmorphism design with custom gradients and micro-animations.
+- **Role-Based Access**: Specialized views for Buyers, Sellers, and Admins.
+- **Global Notifications**: Toast alerts for outbid status, successful bids, and system errors.
+- **Watchlist & Tracking**: Save favorite auctions and monitor bid history.
+- **Robust Auth**: Persistent sessions with automatic token refresh on reload.
 
 ## Environment Variables
 
-Create a `.env` file:
+Create a `.env` file in the root directory:
 
 ```env
 VITE_API_URL=http://localhost:5000/api
@@ -84,29 +82,24 @@ VITE_API_URL=http://localhost:5000/api
 
 ## Available Routes
 
-- `/login` - Login page
-- `/register` - Registration page
-- `/` - Home page (protected)
+- `/login` - Login with modern UI
+- `/register` - Account creation
+- `/` - Auction gallery (Buyer view)
+- `/auctions/:id` - Detailed auction view with real-time bid history
+- `/my-bids` - Tracking of your active and past bids
+- `/watchlist` - Saved auctions for quick access
+- `/my-auctions` - Seller dashboard for inventory control
+- `/create-auction` - Listing creator with Draft support
+- `/edit-auction/:id` - Refine drafts or scheduled listings
+- `/admin` - Global moderation and audit logs
 
 ## Authentication Flow
 
-1. User logs in/registers
-2. Access token and refresh token stored in localStorage
-3. Access token sent with every API request
-4. Automatic token refresh on 401 errors
-5. Redirect to login on refresh failure
-
-## Next Steps
-
-- [ ] Implement auction listing page
-- [ ] Implement auction detail page with real-time bidding
-- [ ] Implement watchlist functionality
-- [ ] Implement notifications
-- [ ] Implement Socket.IO connection
-- [ ] Implement seller dashboard
-- [ ] Implement admin panel
+1. User logs in/registers.
+2. Access token and refresh token stored in `localStorage`.
+3. Persistent session maintenance fetches user profile automatically on page reload.
+4. Automatic token refresh interceptors handle session expiry gracefully.
 
 ## License
 
 MIT
-
