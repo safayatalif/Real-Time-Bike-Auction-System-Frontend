@@ -99,7 +99,3 @@ VITE_API_URL=http://localhost:5000/api
 2. Access token and refresh token stored in `localStorage`.
 3. Persistent session maintenance fetches user profile automatically on page reload.
 4. Automatic token refresh interceptors handle session expiry gracefully.
-
-## License
-
-MIT
